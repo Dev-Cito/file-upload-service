@@ -1,0 +1,8 @@
+packages:
+  - "frontend"
+  - "backend"
+allowBuilds:
+  unrs-resolver: true
+  sharp: true
+  '@scarf/scarf': true
+  bcrypt: true
