@@ -18,24 +18,24 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-100 px-6 py-4">
+    <nav className="bg-[#1e3a8a] border-b border-white/10 px-6 py-4">
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <Link href="/dashboard" className="text-xl font-semibold text-gray-900">
+        <Link href="/dashboard" className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-caveat)' }}>
           FileVault
         </Link>
         <div className="flex items-center gap-6">
           {isAuthenticated ? (
             <>
-              <Link href="/dashboard" className="text-sm text-gray-600 hover:text-black transition">
+              <Link href="/dashboard" className="text-sm text-white/70 hover:text-white transition">
                 My Files
               </Link>
-              <Link href="/upload" className="text-sm text-gray-600 hover:text-black transition">
+              <Link href="/upload" className="text-sm text-white/70 hover:text-white transition">
                 Upload
               </Link>
-              <span className="text-sm text-gray-400">{user?.name}</span>
+              <span className="text-sm text-white/40">{user?.name}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-gray-500 hover:text-black transition"
+                className="text-sm text-white/60 hover:text-white transition"
               >
                 Logout
               </button>
@@ -43,7 +43,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="text-sm bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+              className="text-sm bg-white text-[#1e3a8a] px-4 py-2 rounded-lg hover:bg-white/90 transition font-medium"
             >
               Sign in
             </Link>

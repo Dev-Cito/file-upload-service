@@ -1,77 +1,139 @@
 'use client';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { api } from '@/lib/api';
-import { useAuthStore } from '@/store/auth.store';
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Minimum 8 characters'),
-});
-type FormData = z.infer<typeof schema>;
+import { Eye, EyeOff, Mail, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import AnimatedCharactersPanel from '@/components/ui/animated-characters-panel';
+import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setError } =
-    useForm<FormData>({ resolver: zodResolver(schema) });
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
-  const onSubmit = async (data: FormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
     try {
-      await api.post('/auth/login', data);
+      await api.post('/auth/login', { email, password });
       const meRes = await api.get('/auth/me');
       setAuth(meRes.data.data);
       router.push('/dashboard');
-    } catch {
-      setError('root', { message: 'Invalid email or password' });
+    } catch (err: any) {
+      setError(err.response?.data?.message ?? 'Invalid email or password');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-gray-100 p-8">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Sign in</h1>
-        <p className="text-gray-500 text-sm mb-8">
-          No account?{' '}
-          <Link href="/register" className="text-black font-medium underline">Sign up</Link>
-        </p>
+    <div className="min-h-screen grid lg:grid-cols-2">
+      <AnimatedCharactersPanel isTyping={isTyping} password={password} showPassword={showPassword} />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              {...register('email')}
-              type="email"
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              {...register('password')}
-              type="password"
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
-          </div>
-          {errors.root && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-              <p className="text-red-600 text-sm">{errors.root.message}</p>
+      <div className="flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-105">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-semibold mb-12">
+            <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Sparkles className="size-4 text-primary" />
             </div>
-          )}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-black text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+            <span style={{ fontFamily: 'var(--font-caveat)' }} className="text-2xl tracking-wide">FileVault</span>
+          </div>
+
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back!</h1>
+            <p className="text-muted-foreground text-sm">Please enter your details</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                autoComplete="off"
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => setIsTyping(false)}
+                required
+                className="h-12 border-border/60 focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-12 pr-10 border-border/60 focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="remember" />
+                <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+                  Remember for 30 days
+                </Label>
+              </div>
+              <a href="#" className="text-sm text-primary hover:underline font-medium">
+                Forgot password?
+              </a>
+            </div>
+
+            {error && (
+              <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" className="w-full h-12 text-base font-medium" size="lg" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Log in'}
+            </Button>
+          </form>
+
+          <div className="mt-6">
+            <Button variant="outline" className="w-full h-12 border-border/60 hover:bg-accent" type="button">
+              <Mail className="mr-2 size-5" />
+              Log in with Google
+            </Button>
+          </div>
+
+          <div className="text-center text-sm text-muted-foreground mt-8">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-foreground font-medium hover:underline">
+              Sign Up
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
