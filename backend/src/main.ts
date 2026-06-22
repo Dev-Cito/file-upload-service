@@ -11,7 +11,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
-  app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+  app.use(
+    helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }),
+  );
 
   app.enableCors({
     origin: true,
@@ -22,11 +24,13 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(
@@ -36,7 +40,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('File Upload Service')
-    .setDescription('NestJS File Upload API with MinIO storage and Sharp image processing')
+    .setDescription(
+      'NestJS File Upload API with MinIO storage and Sharp image processing',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
@@ -50,8 +56,8 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT ?? 3003;
-  await app.listen(port);
-  console.log(`Backend running on http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`Backend running on http://0.0.0.0:${port}`);
   console.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 bootstrap();
