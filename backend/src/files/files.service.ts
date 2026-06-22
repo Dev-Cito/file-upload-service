@@ -171,10 +171,10 @@ export class FilesService {
     return this.filesRepository.save(fileEntity);
   }
 
-  async findAll(userId?: string): Promise<File[]> {
+  async findAll(): Promise<File[]> {
     return this.filesRepository.find({
       order: { createdAt: 'DESC' },
-      relations: ['uploadedBy'],
+      relations: { uploadedBy: true },
     });
   }
 
