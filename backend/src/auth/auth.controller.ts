@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, UseGuards, Request, HttpCode, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  UseGuards,
+  Request,
+  HttpCode,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -12,15 +21,25 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
-    const tokens = await this.authService.register(dto.email, dto.password, dto.name);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.register(
+      dto.email,
+      dto.password,
+      dto.name,
+    );
     this.setAccessCookie(res, tokens.accessToken);
     return { message: 'Registered successfully' };
   }
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const tokens = await this.authService.login(dto.email, dto.password);
     this.setAccessCookie(res, tokens.accessToken);
     return { message: 'Logged in successfully' };
@@ -34,8 +53,8 @@ export class AuthController {
     const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('accessToken', {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'strict',
+      secure: true,
+      sameSite: 'none',
       path: '/',
     });
     return { message: 'Logged out successfully' };
@@ -49,11 +68,10 @@ export class AuthController {
   }
 
   private setAccessCookie(res: Response, token: string) {
-    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 24 * 60 * 60 * 1000,
       path: '/',
     });
