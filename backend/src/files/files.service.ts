@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -10,8 +15,17 @@ import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const ALLOWED_DOC_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
+const ALLOWED_DOC_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_DOC_SIZE = 50 * 1024 * 1024;
 
@@ -28,7 +42,9 @@ export class FilesService {
     private config: ConfigService,
   ) {
     this.useSupabase = this.config.get('STORAGE_PROVIDER') === 'supabase';
-    this.logger.log(`Storage provider: ${this.useSupabase ? 'Supabase' : 'MinIO'}`);
+    this.logger.log(
+      `Storage provider: ${this.useSupabase ? 'Supabase' : 'MinIO'}`,
+    );
   }
 
   private get storage() {
@@ -47,7 +63,9 @@ export class FilesService {
     const isImage = fileType === FileType.IMAGE;
     const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_DOC_SIZE;
     if (size > maxSize) {
-      throw new BadRequestException(`File too large. Max size: ${maxSize / 1024 / 1024}MB`);
+      throw new BadRequestException(
+        `File too large. Max size: ${maxSize / 1024 / 1024}MB`,
+      );
     }
   }
 
@@ -58,10 +76,16 @@ export class FilesService {
     return `${prefix}${date}/${id}${ext}`;
   }
 
-  async uploadImage(file: Express.Multer.File, user: User, isPublic: boolean = true): Promise<File> {
+  async uploadImage(
+    file: Express.Multer.File,
+    user: User,
+    isPublic: boolean = true,
+  ): Promise<File> {
     this.validateFile(file.mimetype, file.size);
     if (!ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid image type. Allowed: JPEG, PNG, WebP, GIF');
+      throw new BadRequestException(
+        'Invalid image type. Allowed: JPEG, PNG, WebP, GIF',
+      );
     }
 
     const processedBuffer = await sharp(file.buffer)
@@ -70,17 +94,31 @@ export class FilesService {
       .toBuffer();
 
     const metadata = await sharp(processedBuffer).metadata();
-    const key = this.generateKey(file.originalname, 'images/').replace(path.extname(this.generateKey(file.originalname)), '.webp');
+    const key = this.generateKey(file.originalname, 'images/').replace(
+      path.extname(this.generateKey(file.originalname)),
+      '.webp',
+    );
 
-    const url = await this.storage.uploadFile(key, processedBuffer, 'image/webp');
+    const url = await this.storage.uploadFile(
+      key,
+      processedBuffer,
+      'image/webp',
+    );
 
     const thumbnailBuffer = await sharp(file.buffer)
       .resize(400, 400, { fit: 'cover' })
       .webp({ quality: 70 })
       .toBuffer();
 
-    const thumbnailKey = this.generateKey(file.originalname, 'thumbnails/').replace(path.extname(this.generateKey(file.originalname)), '.webp');
-    const thumbnailUrl = await this.storage.uploadFile(thumbnailKey, thumbnailBuffer, 'image/webp');
+    const thumbnailKey = this.generateKey(
+      file.originalname,
+      'thumbnails/',
+    ).replace(path.extname(this.generateKey(file.originalname)), '.webp');
+    const thumbnailUrl = await this.storage.uploadFile(
+      thumbnailKey,
+      thumbnailBuffer,
+      'image/webp',
+    );
 
     const fileEntity = this.filesRepository.create({
       originalName: file.originalname,
@@ -102,10 +140,16 @@ export class FilesService {
     return this.filesRepository.save(fileEntity);
   }
 
-  async uploadDocument(file: Express.Multer.File, user: User, isPublic: boolean = false): Promise<File> {
+  async uploadDocument(
+    file: Express.Multer.File,
+    user: User,
+    isPublic: boolean = false,
+  ): Promise<File> {
     this.validateFile(file.mimetype, file.size);
     if (!ALLOWED_DOC_TYPES.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid document type. Allowed: PDF, DOC, DOCX');
+      throw new BadRequestException(
+        'Invalid document type. Allowed: PDF, DOC, DOCX',
+      );
     }
 
     const key = this.generateKey(file.originalname, 'documents/');
@@ -128,8 +172,10 @@ export class FilesService {
   }
 
   async findAll(userId?: string): Promise<File[]> {
-    const where = userId ? { uploadedBy: { id: userId } } : {};
-    return this.filesRepository.find({ where, order: { createdAt: 'DESC' } });
+    return this.filesRepository.find({
+      order: { createdAt: 'DESC' },
+      relations: ['uploadedBy'],
+    });
   }
 
   async findOne(id: string): Promise<File> {

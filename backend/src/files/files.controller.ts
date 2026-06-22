@@ -1,11 +1,26 @@
 import {
-  Controller, Post, Get, Delete, Param,
-  UseGuards, Request, UseInterceptors,
-  UploadedFile, UploadedFiles, Query, HttpCode,
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Param,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+  Query,
+  HttpCode,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import { FilesService } from './files.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,8 +35,11 @@ const imageFilter = (req: any, file: any, cb: any) => {
 };
 
 const docFilter = (req: any, file: any, cb: any) => {
-  const allowed = ['application/pdf', 'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  const allowed = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -37,7 +55,9 @@ export class FilesController {
   @Post('upload/image')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Upload a single image — auto-resized + thumbnail generated' })
+  @ApiOperation({
+    summary: 'Upload a single image — auto-resized + thumbnail generated',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -48,11 +68,13 @@ export class FilesController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file', {
-    storage: memoryStorage(),
-    fileFilter: imageFilter,
-    limits: { fileSize: 10 * 1024 * 1024 },
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: imageFilter,
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
   uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Request() req,
@@ -75,18 +97,20 @@ export class FilesController {
       },
     },
   })
-  @UseInterceptors(FilesInterceptor('files', 10, {
-    storage: memoryStorage(),
-    fileFilter: imageFilter,
-    limits: { fileSize: 10 * 1024 * 1024 },
-  }))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: memoryStorage(),
+      fileFilter: imageFilter,
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
   async uploadImages(
     @UploadedFiles() files: Express.Multer.File[],
     @Request() req,
   ) {
     if (!files?.length) throw new BadRequestException('No files provided');
     const results = await Promise.all(
-      files.map((file) => this.filesService.uploadImage(file, req.user))
+      files.map((file) => this.filesService.uploadImage(file, req.user)),
     );
     return results;
   }
@@ -105,26 +129,32 @@ export class FilesController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file', {
-    storage: memoryStorage(),
-    fileFilter: docFilter,
-    limits: { fileSize: 50 * 1024 * 1024 },
-  }))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: docFilter,
+      limits: { fileSize: 50 * 1024 * 1024 },
+    }),
+  )
   uploadDocument(
     @UploadedFile() file: Express.Multer.File,
     @Request() req,
     @Query('isPublic') isPublic: string = 'false',
   ) {
     if (!file) throw new BadRequestException('No file provided');
-    return this.filesService.uploadDocument(file, req.user, isPublic === 'true');
+    return this.filesService.uploadDocument(
+      file,
+      req.user,
+      isPublic === 'true',
+    );
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get all files for current user' })
-  findAll(@Request() req) {
-    return this.filesService.findAll(req.user.id);
+  @ApiOperation({ summary: 'Get all files' })
+  findAll() {
+    return this.filesService.findAll();
   }
 
   @Get('stats')
@@ -144,7 +174,9 @@ export class FilesController {
   @Get(':id/presigned')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get presigned URL for private file (expires in 15min)' })
+  @ApiOperation({
+    summary: 'Get presigned URL for private file (expires in 15min)',
+  })
   getPresignedUrl(@Param('id') id: string) {
     return this.filesService.getPresignedUrl(id);
   }
