@@ -150,16 +150,12 @@ export class FilesController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get all files' })
+  @ApiOperation({ summary: 'Get all public files' })
   findAll() {
     return this.filesService.findAll();
   }
 
   @Get('stats')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get upload statistics' })
   getStats() {
     return this.filesService.getStats();

@@ -16,27 +16,31 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        if (!isAuthenticated) {
+  const init = async () => {
+    try {
+      // Essaie de récupérer le user mais ne redirige pas si non connecté
+      if (!isAuthenticated) {
+        try {
           const meRes = await api.get('/auth/me');
           setAuth(meRes.data.data);
+        } catch {
+          // Pas connecté — c'est ok, on affiche quand même les fichiers
         }
-        const [filesRes, statsRes] = await Promise.all([
-          api.get<ApiResponse<UploadedFile[]>>('/files'),
-          api.get<ApiResponse<any>>('/files/stats'),
-        ]);
-        setFiles(filesRes.data.data);
-        setStats(statsRes.data.data);
-      } catch {
-        clearAuth();
-        router.push('/login');
-      } finally {
-        setLoading(false);
       }
-    };
-    init();
-  }, []);
+      const [filesRes, statsRes] = await Promise.all([
+        api.get<ApiResponse<UploadedFile[]>>('/files'),
+        api.get<ApiResponse<any>>('/files/stats'),
+      ]);
+      setFiles(filesRes.data.data);
+      setStats(statsRes.data.data);
+    } catch {
+      // Erreur réseau
+    } finally {
+      setLoading(false);
+    }
+  };
+  init();
+}, []);
 
   const handleDelete = (id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));

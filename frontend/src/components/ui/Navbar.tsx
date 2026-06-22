@@ -32,21 +32,32 @@ export default function Navbar() {
               <Link href="/upload" className="text-sm text-white/70 hover:text-white transition">
                 Upload
               </Link>
-              <span className="text-sm text-white/40">{user?.name}</span>
+              {user?.role === 'admin' && (
+                <span className="text-sm text-yellow-400 font-medium">Admin</span>
+              )}
+              <span className="text-sm text-white/50">{user?.name}</span>
               <button
                 onClick={handleLogout}
-                className="text-sm text-white/60 hover:text-white transition"
+                className="text-sm text-white/70 hover:text-white transition"
               >
                 Logout
               </button>
             </>
           ) : (
-            <Link
-              href="/login"
-              className="text-sm bg-white text-[#1e3a8a] px-4 py-2 rounded-lg hover:bg-white/90 transition font-medium"
-            >
-              Sign in
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-sm text-white/70 hover:text-white transition"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm bg-white text-[#1e3a8a] px-4 py-2 rounded-lg hover:bg-white/90 transition font-medium"
+              >
+                Sign up
+              </Link>
+            </>
           )}
         </div>
       </div>
