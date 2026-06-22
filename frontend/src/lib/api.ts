@@ -8,7 +8,7 @@ export const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config.url?.includes('/auth/me')) {
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
