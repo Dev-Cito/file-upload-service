@@ -2,7 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  Logger,
+  Logger,ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+
 
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
