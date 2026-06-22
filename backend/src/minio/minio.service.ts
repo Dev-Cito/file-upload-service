@@ -35,12 +35,14 @@ export class MinioService implements OnModuleInit {
       // Set public policy
       const policy = JSON.stringify({
         Version: '2012-10-17',
-        Statement: [{
-          Effect: 'Allow',
-          Principal: { AWS: ['*'] },
-          Action: ['s3:GetObject'],
-          Resource: [`arn:aws:s3:::${this.bucket}/*`],
-        }],
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: { AWS: ['*'] },
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${this.bucket}/*`],
+          },
+        ],
       });
       await this.client.setBucketPolicy(this.bucket, policy);
     } catch (error) {
@@ -52,11 +54,17 @@ export class MinioService implements OnModuleInit {
     key: string,
     buffer: Buffer,
     mimeType: string,
-    size: number,
+    size?: number,
   ): Promise<string> {
-    await this.client.putObject(this.bucket, key, buffer, size, {
-      'Content-Type': mimeType,
-    });
+    await this.client.putObject(
+      this.bucket,
+      key,
+      buffer,
+      size ?? buffer.length,
+      {
+        'Content-Type': mimeType,
+      },
+    );
     return this.getPublicUrl(key);
   }
 
