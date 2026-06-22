@@ -191,6 +191,11 @@ export class FilesService {
 
   async delete(id: string, user: User): Promise<void> {
     const file = await this.findOne(id);
+
+    if (user.role !== 'admin') {
+      throw new ForbiddenException('Only admins can delete files');
+    }
+
     await this.storage.deleteFile(file.key);
     if (file.thumbnailKey) await this.storage.deleteFile(file.thumbnailKey);
     await this.filesRepository.remove(file);

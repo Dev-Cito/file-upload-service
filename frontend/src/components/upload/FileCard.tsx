@@ -1,7 +1,8 @@
-'use client';
-import { UploadedFile, FileType } from '@/types';
-import { api } from '@/lib/api';
-import { useState } from 'react';
+"use client";
+import { UploadedFile, FileType } from "@/types";
+import { api } from "@/lib/api";
+import { useState } from "react";
+import { useAuthStore } from "@/store/auth.store";
 
 interface FileCardProps {
   file: UploadedFile;
@@ -17,15 +18,17 @@ const formatSize = (bytes: number) => {
 export default function FileCard({ file, onDelete }: FileCardProps) {
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "admin";
 
   const handleDelete = async () => {
-    if (!confirm('Delete this file?')) return;
+    if (!confirm("Delete this file?")) return;
     setDeleting(true);
     try {
       await api.delete(`/files/${file.id}`);
       onDelete(file.id);
     } catch {
-      alert('Failed to delete file');
+      alert("Failed to delete file");
     } finally {
       setDeleting(false);
     }
@@ -43,11 +46,13 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
     <div
       className="rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.22)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)',
+        background:
+          "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid rgba(255,255,255,0.22)",
+        boxShadow:
+          "0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25)",
       }}
     >
       {/* Image / placeholder */}
@@ -62,7 +67,7 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
       ) : (
         <div
           className="aspect-video flex items-center justify-center text-4xl"
-          style={{ background: 'rgba(255,255,255,0.06)' }}
+          style={{ background: "rgba(255,255,255,0.06)" }}
         >
           📄
         </div>
@@ -75,7 +80,11 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
         </p>
         <div className="flex items-center gap-2 text-xs text-white/50 mb-3">
           <span>{formatSize(file.size)}</span>
-          {file.width && <span>· {file.width}×{file.height}</span>}
+          {file.width && (
+            <span>
+              · {file.width}×{file.height}
+            </span>
+          )}
           <span>· {new Date(file.createdAt).toLocaleDateString()}</span>
         </div>
 
@@ -85,14 +94,18 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
             onClick={handleCopyUrl}
             className="flex-1 text-xs px-3 py-1.5 rounded-lg transition-all duration-200 font-medium"
             style={{
-              background: 'rgba(255,255,255,0.12)',
-              color: copied ? 'rgba(134,239,172,1)' : 'rgba(255,255,255,0.8)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              background: "rgba(255,255,255,0.12)",
+              color: copied ? "rgba(134,239,172,1)" : "rgba(255,255,255,0.8)",
+              border: "1px solid rgba(255,255,255,0.15)",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.2)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.12)")
+            }
           >
-            {copied ? '✓ Copied' : 'Copy URL'}
+            {copied ? "✓ Copied" : "Copy URL"}
           </button>
           <a
             href={file.url}
@@ -100,29 +113,40 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
             rel="noopener noreferrer"
             className="text-xs px-3 py-1.5 rounded-lg transition-all duration-200 font-medium"
             style={{
-              background: 'rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.9)',
-              border: '1px solid rgba(255,255,255,0.2)',
+              background: "rgba(255,255,255,0.15)",
+              color: "rgba(255,255,255,0.9)",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.25)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
+            }
           >
             View
           </a>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-xs px-3 py-1.5 rounded-lg transition-all duration-200 font-medium disabled:opacity-40"
-            style={{
-              background: 'rgba(239,68,68,0.2)',
-              color: 'rgba(252,165,165,1)',
-              border: '1px solid rgba(239,68,68,0.3)',
-            }}
-            onMouseEnter={e => { if (!deleting) e.currentTarget.style.background = 'rgba(239,68,68,0.35)' }}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.2)')}
-          >
-            {deleting ? '...' : 'Delete'}
-          </button>
+          {isAdmin && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs px-3 py-1.5 rounded-lg transition-all duration-200 font-medium disabled:opacity-40"
+              style={{
+                background: "rgba(239,68,68,0.2)",
+                color: "rgba(252,165,165,1)",
+                border: "1px solid rgba(239,68,68,0.3)",
+              }}
+              onMouseEnter={(e) => {
+                if (!deleting)
+                  e.currentTarget.style.background = "rgba(239,68,68,0.35)";
+              }}
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "rgba(239,68,68,0.2)")
+              }
+            >
+              {deleting ? "..." : "Delete"}
+            </button>
+          )}
         </div>
       </div>
     </div>
