@@ -5,8 +5,12 @@ const AUTH_ROUTES = ['/login', '/register'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get('accessToken')?.value;
 
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.next();
+  }
+
+  const token = request.cookies.get('accessToken')?.value;
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
   const isAuth = AUTH_ROUTES.some((r) => pathname.startsWith(r));
 
