@@ -14,16 +14,10 @@ async function bootstrap() {
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowed = [
-        process.env.FRONTEND_URL ?? 'http://localhost:3000',
-        'http://localhost:3000',
-        `http://localhost:${process.env.PORT ?? 3003}`, // Swagger UI
-      ];
-      const ok = !origin || allowed.includes(origin) || origin.endsWith('.vercel.app');
-      callback(null, ok);
-    },
+    origin: true,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.setGlobalPrefix('api');
