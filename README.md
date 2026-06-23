@@ -2,7 +2,7 @@
 
 A full-stack file upload and management platform. Upload images and documents, manage your library, and share files instantly with public URLs.
 
-**Live →** [filevault.vercel.app](https://filevault.vercel.app)
+**Live →** (https://file-upload-service-chi.vercel.app/)
 
 ---
 
